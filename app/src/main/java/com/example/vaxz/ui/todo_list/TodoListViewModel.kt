@@ -1,5 +1,6 @@
 package com.example.vaxz.ui.todo_list
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.vaxz.util.Routes
@@ -18,7 +19,7 @@ import javax.inject.Inject
 class TodoListViewModel @Inject constructor(
     private val repository: TodoRepository
 ): ViewModel() {
-    val TAG = "VIEW_MODEL"
+    val TAG = "LIST_TODO"
     val todos = repository.getTodos()
 
     private val _uiEvent = Channel<UiEvent>()
@@ -41,6 +42,7 @@ class TodoListViewModel @Inject constructor(
     fun onEvent(event: TodoListEvent) {
         when(event) {
             is TodoListEvent.OnDeleteTodoClick -> {
+                Log.d(TAG, "Triggered OnDeleteTodoClick.")
                 viewModelScope.launch(Dispatchers.IO) {
                     deletedTodo = event.todo
                     repository.deleteTodo(event.todo)
@@ -53,6 +55,7 @@ class TodoListViewModel @Inject constructor(
                 }
             }
             is TodoListEvent.OnDoneChange -> {
+                Log.d(TAG, "Triggered OnDoneChange.")
                 viewModelScope.launch(Dispatchers.IO) {
                     repository.insertTodo(event.todo.copy(
                         isDone = event.isDone
@@ -60,6 +63,7 @@ class TodoListViewModel @Inject constructor(
                 }
             }
             is TodoListEvent.OnUndoDeleteClick -> {
+                Log.d(TAG, "Triggered OnUndoDeleteClick.")
                 deletedTodo?.let {
                     viewModelScope.launch(Dispatchers.IO) {
                         repository.insertTodo(it)
@@ -67,11 +71,13 @@ class TodoListViewModel @Inject constructor(
                 }
             }
             is TodoListEvent.OnTodoClick -> {
+                Log.d(TAG, "Triggered OnTodoClick")
                 viewModelScope.launch(Dispatchers.Main) {
                     _uiEvent.send(UiEvent.Navigate(Routes.ADD_EDIT_TODO + "?todoId=${event.todo.id}"))
                 }
             }
             is TodoListEvent.OnAddTodoClick -> {
+                //Log.d(TAG, "Triggered OnAddTodoClick")
                 viewModelScope.launch(Dispatchers.Main) {
                     _uiEvent.send(UiEvent.Navigate(Routes.ADD_EDIT_TODO + "?todoId=-1"))
                 }

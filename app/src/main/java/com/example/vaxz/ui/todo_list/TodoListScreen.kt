@@ -13,6 +13,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
@@ -30,16 +31,16 @@ fun TodoListScreen(
     onNavigate: (UiEvent.Navigate) -> Unit,
     viewModel: TodoListViewModel = hiltViewModel()
 ) {
-    val TAG = "LIST_SCREEN"
+    val TAG = "LIST_TODO"
     val todos = viewModel.todos.collectAsState(initial = emptyList())
-    val snackBarHostState = remember { SnackbarHostState() }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { event ->
             when(event) {
                 is UiEvent.ShowSnackBar -> {
-                    Log.d(TAG, "Snackbar launched! Msg: ${event.message}")
-                    val snackBarResult = snackBarHostState.showSnackbar(
+                    Log.d(TAG, "Collected ShowSnackBar with message as ${event.message}.")
+                    val snackBarResult = snackbarHostState.showSnackbar(
                         message = event.message,
                         actionLabel = event.action
                     )
@@ -51,7 +52,7 @@ fun TodoListScreen(
                     }
                 }
                 is UiEvent.Navigate -> {
-                    Log.d(TAG, "Navigate! Destination ${event.route}")
+                    Log.d(TAG, "Collected Navigate with destination as ${event.route}.")
                     onNavigate(event)
                 }
                 else -> Unit
@@ -59,6 +60,7 @@ fun TodoListScreen(
         }  // end COLLECT
     }  // end LAUNCHED EFFECT
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 viewModel.onEvent(TodoListEvent.OnAddTodoClick)
